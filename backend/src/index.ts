@@ -8,6 +8,8 @@ import skillRoutes from './routes/skillRoutes';
 import quizRoutes from './routes/quizRoutes';
 import questionRoutes from './routes/questionRoutes';
 import { logger } from "./middleware/logger";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./swagger";
 
 dotenv.config();
 const app = express();
@@ -16,6 +18,8 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(logger);
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Skill Assessment API Running 🚀");
