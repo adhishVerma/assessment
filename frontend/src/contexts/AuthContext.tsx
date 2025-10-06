@@ -33,7 +33,7 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(false); //change to true after api integration
+  const [loading, setLoading] = useState<boolean>(true); //change to true after api integration
 
   useEffect(() => {
     const initializeAuth = () => {

@@ -30,18 +30,18 @@ export default function App() {
             <Route
               path="/dashboard"
               element={
-                //<ProtectedRoute role="user">
+                <ProtectedRoute role="USER">
                   <Dashboard />
-                //</ProtectedRoute>
+                </ProtectedRoute>
               }
             />
 
             <Route
               path="/admin"
               element={
-                //<ProtectedRoute role="admin">
+                <ProtectedRoute role="ADMIN">
                   <AdminDashboard />
-                //</ProtectedRoute>
+                </ProtectedRoute>
               }
             />
 
