@@ -173,11 +173,10 @@ const QuestionsTab = () => {
 
       if (view === "edit" && editingQuestionId) {
         // Update existing question
-        // const response = await fetch(`/api/questions/${editingQuestionId}`, {
-        //   method: 'PUT',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify(formData),
-        // });
+        await questionService.update(editingQuestionId, {
+          ...formData,
+          skillId: parseInt(formData.skillId),
+        });
 
         console.log("Updating question:", editingQuestionId, formData);
 
@@ -198,11 +197,10 @@ const QuestionsTab = () => {
         );
       } else {
         // Create new question
-        // const response = await fetch('/api/questions', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify(formData),
-        // });
+        await questionService.create({
+          ...formData,
+          skillId: parseInt(formData.skillId),
+        });
 
         console.log("Creating question:", formData);
 
@@ -234,7 +232,7 @@ const QuestionsTab = () => {
   const handleDeleteQuestion = async (questionId: number) => {
     try {
       // Replace with actual API call
-      // await fetch(`/api/questions/${questionId}`, { method: 'DELETE' });
+      await questionService.delete(questionId);
       console.log("Deleting question:", questionId);
       setQuestions(questions.filter((q) => q.id !== questionId));
     } catch (error) {

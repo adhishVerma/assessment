@@ -103,12 +103,13 @@ export interface RegisterFormData {
 }
 
 export interface QuestionFormData {
-  text: string;
+  questionText: string;
   optionA: string;
   optionB: string;
   optionC: string;
   optionD: string;
   correctOption: "A" | "B" | "C" | "D";
+  difficulty : "EASY" | "MEDIUM" | "HARD"
   skillId: number;
 }
 
