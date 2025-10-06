@@ -2,7 +2,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  role: 'ADMIN' | 'USER';
+  role: "ADMIN" | "USER";
   createdAt: string;
   updatedAt: string;
 }
@@ -27,12 +27,13 @@ export interface Skill {
 
 export interface Question {
   id: number;
-  text: string;
+  questionText: string;
+  difficulty: "EASY" | "MEDIUM" | "HARD";
   optionA: string;
   optionB: string;
   optionC: string;
   optionD: string;
-  correctOption: 'A' | 'B' | 'C' | 'D';
+  correctOption: "A" | "B" | "C" | "D";
   skillId: number;
   skill?: Skill;
   isDeleted: boolean;
@@ -56,7 +57,7 @@ export interface QuizAnswer {
   id: number;
   sessionId: number;
   questionId: number;
-  selectedOption: 'A' | 'B' | 'C' | 'D';
+  selectedOption: "A" | "B" | "C" | "D";
   isCorrect: boolean;
   question?: Question;
 }
@@ -107,7 +108,7 @@ export interface QuestionFormData {
   optionB: string;
   optionC: string;
   optionD: string;
-  correctOption: 'A' | 'B' | 'C' | 'D';
+  correctOption: "A" | "B" | "C" | "D";
   skillId: number;
 }
 
