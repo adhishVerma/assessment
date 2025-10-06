@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  name         String
+  email        String        @unique
+  passwordHash String
+  role         Role          @default(USER)
+  sessions     QuizSession[]
+  createdAt    DateTime      @default(now())
+  
+  isDeleted  Boolean @default(false)
+  deletedAt   DateTime?
+}
+
+model Skill {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
+  description String?
+  questions   Question[]
+  QuizSession QuizSession[]
+
+  isDeleted   Boolean    @default(false)
+  deletedAt   DateTime?
+}
+
+model Question {
+  id            Int          @id @default(autoincrement())
+  skill         Skill        @relation(fields: [skillId], references: [id])
+  skillId       Int
+  questionText  String
+  optionA       String
+  optionB       String
+  optionC       String
+  optionD       String
+  correctOption Option
+  difficulty    Difficulty   @default(MEDIUM)
+  answers       QuizAnswer[]
+
+  isDeleted     Boolean    @default(false)
+  deletedAt     DateTime?
+}
+
+model QuizSession {
+  id         Int          @id @default(autoincrement())
+  user       User         @relation(fields: [userId], references: [id])
+  userId     Int
+  skill      Skill        @relation(fields: [skillId], references: [id])
+  skillId    Int
+  startTime  DateTime     @default(now())
+  endTime    DateTime?
+  totalScore Int          @default(0)
+  answers    QuizAnswer[]
+}
+
+model QuizAnswer {
+  id             Int         @id @default(autoincrement())
+  session        QuizSession @relation(fields: [sessionId], references: [id])
+  sessionId      Int
+  question       Question    @relation(fields: [questionId], references: [id])
+  questionId     Int
+  selectedOption Option
+  isCorrect      Boolean     @default(false)
+  answeredAt     DateTime    @default(now())
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Option {
+  A
+  B
+  C
+  D
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
