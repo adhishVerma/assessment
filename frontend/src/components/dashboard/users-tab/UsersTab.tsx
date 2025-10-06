@@ -14,24 +14,18 @@ import { DataTable } from "mantine-datatable";
 import { IconSearch, IconArrowLeft } from "@tabler/icons-react";
 import ReportsTab from "../reports-tab/ReportsTab";
 import "mantine-datatable/styles.layer.css";
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  testsCompleted: number;
-  avgScore: number;
-  lastTestDate?: string;
-}
+import { userService } from "../../../services/userService";
+import { UserItem } from "../../../services/types";
 
 const UsersTab = () => {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   // State to track selected user and view
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -40,63 +34,22 @@ const UsersTab = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      // Replace with actual API call
-      // const response = await fetch('/api/users');
-      // const data = await response.json();
-      // setUsers(data);
+      setError(null);
 
-      // Mock data
-      const mockUsers: User[] = [
-        {
-          id: 1,
-          name: "John Doe",
-          email: "john.doe@example.com",
-          testsCompleted: 5,
-          avgScore: 85.5,
-          lastTestDate: "2025-10-05",
-        },
-        {
-          id: 2,
-          name: "Jane Smith",
-          email: "jane.smith@example.com",
-          testsCompleted: 3,
-          avgScore: 92.0,
-          lastTestDate: "2025-10-04",
-        },
-        {
-          id: 3,
-          name: "Bob Johnson",
-          email: "bob.johnson@example.com",
-          testsCompleted: 7,
-          avgScore: 78.3,
-          lastTestDate: "2025-10-03",
-        },
-        {
-          id: 4,
-          name: "Alice Williams",
-          email: "alice.williams@example.com",
-          testsCompleted: 2,
-          avgScore: 88.5,
-          lastTestDate: "2025-10-02",
-        },
-        {
-          id: 5,
-          name: "Charlie Brown",
-          email: "charlie.brown@example.com",
-          testsCompleted: 4,
-          avgScore: 81.2,
-          lastTestDate: "2025-10-01",
-        },
-      ];
-      setUsers(mockUsers);
-    } catch (error) {
-      console.error("Error fetching users:", error);
+      // Call the actual API using userService
+      const data = await userService.getAll();
+      setUsers(data);
+    } catch (err: any) {
+      console.error("Error fetching users:", err);
+      setError(
+        err.response?.data?.error || err.message || "Failed to fetch users"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRowClick = (user: User) => {
+  const handleRowClick = (user: UserItem) => {
     console.log("User clicked:", user);
     setSelectedUserId(user.id);
     setSelectedUser(user);
@@ -178,13 +131,13 @@ const UsersTab = () => {
                   accessor: "name",
                   title: "Name",
                   width: "25%",
-                  render: (user: User) => <Text fw={500}>{user.name}</Text>,
+                  render: (user: UserItem) => <Text fw={500}>{user.name}</Text>,
                 },
                 {
                   accessor: "email",
                   title: "Email",
                   width: "30%",
-                  render: (user: User) => (
+                  render: (user: UserItem) => (
                     <Text c="dimmed" size="sm">
                       {user.email}
                     </Text>
@@ -195,7 +148,7 @@ const UsersTab = () => {
                   title: "Tests Completed",
                   textAlign: "center",
                   width: "15%",
-                  render: (user: User) => (
+                  render: (user: UserItem) => (
                     <Badge variant="light" color="blue">
                       {user.testsCompleted}
                     </Badge>
@@ -206,7 +159,7 @@ const UsersTab = () => {
                   title: "Avg Score",
                   textAlign: "center",
                   width: "15%",
-                  render: (user: User) => (
+                  render: (user: UserItem) => (
                     <Badge
                       variant="light"
                       color={
@@ -226,7 +179,7 @@ const UsersTab = () => {
                   title: "Last Test",
                   textAlign: "center",
                   width: "15%",
-                  render: (user: User) => (
+                  render: (user: UserItem) => (
                     <Text size="sm" c="dimmed">
                       {user.lastTestDate
                         ? new Date(user.lastTestDate).toLocaleDateString()

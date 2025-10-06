@@ -7,6 +7,15 @@ export interface User {
   updatedAt: string;
 }
 
+export interface UserItem {
+  id: number;
+  name: string;
+  email: string;
+  testsCompleted: number;
+  avgScore: number;
+  lastTestDate?: string;
+}
+
 export interface Skill {
   id: number;
   name: string;
