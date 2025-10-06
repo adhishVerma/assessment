@@ -32,7 +32,7 @@ api.interceptors.response.use(
 
 export const authService = {
   login: async (credentials: LoginFormData): Promise<LoginResponse> => {
-    const response: AxiosResponse<LoginResponse> = await api.post('/users/login', credentials);
+    const response: AxiosResponse<LoginResponse> = await api.post('/user/login', credentials);
     const { token, user } = response.data;
     
     localStorage.setItem('token', token);
@@ -42,7 +42,7 @@ export const authService = {
   },
 
   register: async (userData: RegisterFormData): Promise<User> => {
-    const response: AxiosResponse<{ user: User; token: string }> = await api.post('/users/register', userData);
+    const response: AxiosResponse<{ user: User; token: string }> = await api.post('/user/register', userData);
     return response.data.user;
   },
 
