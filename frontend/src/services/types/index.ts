@@ -63,10 +63,18 @@ export interface QuizAnswer {
 }
 
 export interface QuizReport {
-  quizId: number;
-  total: number;
-  correct: number;
-  createdAt: string;
+  totalQuizzes: number;
+  averageScore: number;
+  excellentScore: number;
+  topicWise: {
+    quizId: number;
+    skillName: string;
+    skillDescription: string | null;
+    total: number;
+    correct: number;
+    scorePercent: number;
+    createdAt: Date;
+  }[];
 }
 
 // API Response Types
@@ -109,7 +117,7 @@ export interface QuestionFormData {
   optionC: string;
   optionD: string;
   correctOption: "A" | "B" | "C" | "D";
-  difficulty : "EASY" | "MEDIUM" | "HARD"
+  difficulty: "EASY" | "MEDIUM" | "HARD";
   skillId: number;
 }
 

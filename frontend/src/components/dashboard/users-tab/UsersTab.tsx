@@ -95,7 +95,7 @@ const UsersTab = () => {
             </Group>
           </div>
           {/* Render the ReportsTab component with the selected user's ID */}
-          <ReportsTab />
+          <ReportsTab userId={selectedUserId}/>
         </Stack>
       </Container>
     );

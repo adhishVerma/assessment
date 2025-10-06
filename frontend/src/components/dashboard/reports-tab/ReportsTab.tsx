@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from "react";
 import {
   Container,
   Title,
@@ -11,111 +11,72 @@ import {
   RingProgress,
   SimpleGrid,
   Paper,
-  ThemeIcon
-} from '@mantine/core';
-import { IconTrophy, IconTarget, IconTrendingUp } from '@tabler/icons-react';
+  ThemeIcon,
+} from "@mantine/core";
+import { IconTrophy, IconTarget, IconTrendingUp } from "@tabler/icons-react";
+// import { quizService } from "../../../services/quizService";
+import { userService } from "../../../services/userService";
+import { QuizReport } from "../../../services/types";
+import { report } from "process";
 
-// Placeholder data - replace with API call
-const PLACEHOLDER_REPORTS = [
-  {
-    id: 1,
-    skillName: 'JavaScript',
-    score: 85,
-    totalQuestions: 20,
-    correctAnswers: 17,
-    date: '2025-10-05',
-    level: 'Intermediate'
-  },
-  {
-    id: 2,
-    skillName: 'React',
-    score: 92,
-    totalQuestions: 15,
-    correctAnswers: 14,
-    date: '2025-10-04',
-    level: 'Advanced'
-  },
-  {
-    id: 3,
-    skillName: 'TypeScript',
-    score: 78,
-    totalQuestions: 12,
-    correctAnswers: 9,
-    date: '2025-10-03',
-    level: 'Beginner'
-  },
-  {
-    id: 4,
-    skillName: 'Node.js',
-    score: 88,
-    totalQuestions: 18,
-    correctAnswers: 16,
-    date: '2025-10-02',
-    level: 'Intermediate'
-  },
-  {
-    id: 5,
-    skillName: 'CSS',
-    score: 95,
-    totalQuestions: 10,
-    correctAnswers: 10,
-    date: '2025-10-01',
-    level: 'Advanced'
-  }
-];
 
-const ReportsTab = () => {
-  const [reports] = useState(PLACEHOLDER_REPORTS);
+interface Props {
+  userId?: string;
+}
 
-  // TODO: Replace with actual API call
-  // useEffect(() => {
-  //   const fetchReports = async () => {
-  //     const response = await fetch('/api/quiz-reports');
-  //     const data = await response.json();
-  //     setReports(data);
-  //   };
-  //   fetchReports();
-  // }, []);
+const ReportsTab = ({ userId }: Props) => {
+  const [reports, setReports] = useState<QuizReport>();
 
-  const getScoreColor = (score) => {
-    if (score >= 90) return 'green';
-    if (score >= 75) return 'blue';
-    if (score >= 60) return 'yellow';
-    return 'red';
+  useEffect(() => {
+    const fetchReports = async () => {
+      if (userId) {
+        const data = await userService.getUserReport(parseInt(userId));
+        setReports(data);
+      }
+    };
+    fetchReports();
+  }, []);
+
+  const getScoreColor = (score : number) => {
+    if (score >= 90) return "green";
+    if (score >= 75) return "blue";
+    if (score >= 60) return "yellow";
+    return "red";
   };
 
-  const getScoreBadgeLabel = (score) => {
-    if (score >= 90) return 'Excellent';
-    if (score >= 75) return 'Good';
-    if (score >= 60) return 'Fair';
-    return 'Needs Improvement';
+  const getScoreBadgeLabel = (score : number) => {
+    if (score >= 90) return "Excellent";
+    if (score >= 75) return "Good";
+    if (score >= 60) return "Fair";
+    return "Needs Improvement";
   };
 
-  const averageScore = reports.length > 0
-    ? Math.round(reports.reduce((sum, r) => sum + r.score, 0) / reports.length)
-    : 0;
-
-  const totalQuizzes = reports.length;
-  const excellentQuizzes = reports.filter(r => r.score >= 90).length;
 
   return (
     <Container size="lg" py="xl">
-      <Stack spacing="xl">
+      <Stack gap="xl">
         <div>
-          <Title order={2} mb="xs">Quiz Reports</Title>
+          <Title order={2} mb="xs">
+            Quiz Reports
+          </Title>
           <Text color="dimmed">View your past quiz performance and scores</Text>
         </div>
 
         {/* Summary Stats */}
-        <SimpleGrid cols={3} breakpoints={[{ maxWidth: 'sm', cols: 1 }]}>
+        <SimpleGrid cols={3} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
           <Paper p="md" withBorder>
             <Group position="apart">
               <div>
-                <Text size="xs" color="dimmed" weight={500} transform="uppercase">
+                <Text
+                  size="xs"
+                  color="dimmed"
+                  w={500}
+                  transform="uppercase"
+                >
                   Total Quizzes
                 </Text>
-                <Text size="xl" weight={700} mt="xs">
-                  {totalQuizzes}
+                <Text size="xl" w={700} mt="xs">
+                  {reports?.totalQuizzes}
                 </Text>
               </div>
               <ThemeIcon size="xl" variant="light" color="blue">
@@ -127,11 +88,16 @@ const ReportsTab = () => {
           <Paper p="md" withBorder>
             <Group position="apart">
               <div>
-                <Text size="xs" color="dimmed" weight={500} transform="uppercase">
+                <Text
+                  size="xs"
+                  color="dimmed"
+                  weight={500}
+                  transform="uppercase"
+                >
                   Average Score
                 </Text>
                 <Text size="xl" weight={700} mt="xs">
-                  {averageScore}%
+                  {reports?.averageScore}%
                 </Text>
               </div>
               <ThemeIcon size="xl" variant="light" color="green">
@@ -143,11 +109,16 @@ const ReportsTab = () => {
           <Paper p="md" withBorder>
             <Group position="apart">
               <div>
-                <Text size="xs" color="dimmed" weight={500} transform="uppercase">
+                <Text
+                  size="xs"
+                  color="dimmed"
+                  weight={500}
+                  transform="uppercase"
+                >
                   Excellent Scores
                 </Text>
                 <Text size="xl" weight={700} mt="xs">
-                  {excellentQuizzes}
+                  {reports?.excellentScore}
                 </Text>
               </div>
               <ThemeIcon size="xl" variant="light" color="yellow">
@@ -159,7 +130,7 @@ const ReportsTab = () => {
 
         {/* Quiz Results List */}
         <Stack spacing="md">
-          {reports.length === 0 ? (
+          {reports?.totalQuizzes.length === 0 ? (
             <Card shadow="sm" padding="xl" radius="md" withBorder>
               <Stack align="center" spacing="xs">
                 <Text size="lg" color="dimmed">
@@ -171,25 +142,35 @@ const ReportsTab = () => {
               </Stack>
             </Card>
           ) : (
-            reports.map((report) => (
-              <Card key={report.id} shadow="sm" padding="lg" radius="md" withBorder>
+            reports?.topicWise.map((report) => (
+              <Card
+                key={report.id}
+                shadow="sm"
+                padding="lg"
+                radius="md"
+                withBorder
+              >
                 <Group position="apart" align="flex-start">
                   <div style={{ flex: 1 }}>
                     <Group spacing="sm" mb="xs">
                       <Title order={4}>{report.skillName}</Title>
                       <Badge variant="light" size="sm">
-                        {report.level}
+                        {report.level || 'Medium'}
                       </Badge>
-                      <Badge color={getScoreColor(report.score)} variant="filled">
-                        {getScoreBadgeLabel(report.score)}
+                      <Badge
+                        color={getScoreColor(report.scorePercent)}
+                        variant="filled"
+                      >
+                        {getScoreBadgeLabel(report.scorePercent)}
                       </Badge>
                     </Group>
-                    
+
                     <Text size="sm" color="dimmed" mb="md">
-                      Completed on {new Date(report.date).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
+                      Started on{" "}
+                      {new Date(report.createdAt).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
                       })}
                     </Text>
 
@@ -199,16 +180,16 @@ const ReportsTab = () => {
                           Correct Answers
                         </Text>
                         <Text size="sm" weight={600}>
-                          {report.correctAnswers} / {report.totalQuestions}
+                          {report.correct} / {report.total}
                         </Text>
                       </div>
                       <div style={{ flex: 1 }}>
                         <Text size="xs" color="dimmed" weight={500} mb={4}>
                           Score
                         </Text>
-                        <Progress 
-                          value={report.score} 
-                          color={getScoreColor(report.score)}
+                        <Progress
+                          value={report.scorePercent}
+                          color={getScoreColor(report.scorePercent)}
                           size="lg"
                           radius="xl"
                         />
@@ -220,11 +201,16 @@ const ReportsTab = () => {
                     size={100}
                     thickness={8}
                     roundCaps
-                    sections={[{ value: report.score, color: getScoreColor(report.score) }]}
+                    sections={[
+                      {
+                        value: report.scorePercent,
+                        color: getScoreColor(report.scorePercent),
+                      },
+                    ]}
                     label={
-                      <div style={{ textAlign: 'center' }}>
+                      <div style={{ textAlign: "center" }}>
                         <Text size="xl" weight={700}>
-                          {report.score}%
+                          {report.scorePercent}%
                         </Text>
                       </div>
                     }

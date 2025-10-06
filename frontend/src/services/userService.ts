@@ -14,8 +14,8 @@ export const userService = {
     return response.data;
   },
 
-  getUserReport: async (userId: number): Promise<QuizReport[]> => {
-    const response: AxiosResponse<QuizReport[]> = await api.get(`/user/${userId}/report`);
+  getUserReport: async (userId: number): Promise<QuizReport> => {
+    const response: AxiosResponse<QuizReport> = await api.get(`/user/${userId}/report`);
     return response.data;
   },
 };
