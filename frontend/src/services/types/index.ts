@@ -62,21 +62,6 @@ export interface QuizAnswer {
   question?: Question;
 }
 
-export interface QuizReport {
-  totalQuizzes: number;
-  averageScore: number;
-  excellentScore: number;
-  topicWise: {
-    quizId: number;
-    skillName: string;
-    skillDescription: string | null;
-    total: number;
-    correct: number;
-    scorePercent: number;
-    createdAt: Date;
-  }[];
-}
-
 // API Response Types
 export interface LoginResponse {
   user: User;
@@ -125,3 +110,43 @@ export interface SkillFormData {
   name: string;
   description: string;
 }
+
+// Add to your existing types file
+
+export interface SkillGap {
+  skillId: number;
+  skillName: string;
+  averageScore: number;
+  quizzesTaken: number;
+  lastAttempted: string;
+  status: "critical" | "needs-improvement" | "good" | "excellent";
+  trend: "improving" | "declining" | "stable";
+}
+
+// Extend the existing QuizReport topicWise type for your usage
+export interface TopicWiseReportItem {
+  quizId: number;
+  skillName: string;
+  skillDescription: string | null;
+  total: number;
+  correct: number;
+  scorePercent: number;
+  createdAt: Date;
+}
+
+// Adjust QuizReport interface to use TopicWiseReportItem
+export interface QuizReport {
+  totalQuizzes: number;
+  averageScore: number;
+  excellentScore: number;
+  topicWise: TopicWiseReportItem[];
+  skillGaps?: SkillGap[]; // Optional inclusion if present in your API responses
+  recentActivity?: {
+    week: number;
+    month: number;
+    total: number;
+  };
+}
+
+// TimeFilter type for query parameters in your reports API calls
+export type TimeFilter = "week" | "month" | "all";
