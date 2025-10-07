@@ -15,15 +15,19 @@ import {
 import { Question, Skill } from "../../../services/types";
 import { skillService } from "../../../services/skillService";
 import { questionService } from "../../../services/questionService";
+import { quizService } from "../../../services/quizService";
 
 const QuizTab = () => {
   const [step, setStep] = useState("skill-selection"); // 'skill-selection' | 'quiz' | 'completed'
   const [selectedSkill, setSelectedSkill] = useState<number | null>(null);
+  const [sessionId, setSessionId] = useState<number | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [currentAnswer, setCurrentAnswer] = useState("");
   const [skills, setSkills] = useState<Skill[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSkills();
@@ -35,21 +39,34 @@ const QuizTab = () => {
       setSkills(skillsList);
     } catch (err) {
       console.error(err);
+      setError("Failed to load skills");
     }
   };
 
-  // Function to fetch questions based on skill
+  // Function to start quiz session and fetch questions
   const handleSkillSelect = async (skillId: number) => {
     setSelectedSkill(skillId);
+    setLoading(true);
+    setError(null);
+    
     try {
+      // Start quiz session
+      const startResponse = await quizService.startSession(skillId);
+      setSessionId(startResponse.id);
+      
+      // Fetch questions for the skill
       const fetchedQuestions = await questionService.getBySkill(skillId);
       setQuestions(fetchedQuestions);
+      
       setStep("quiz");
       setCurrentQuestionIndex(0);
       setAnswers({});
       setCurrentAnswer("");
     } catch (err) {
       console.error(err);
+      setError("Failed to start quiz. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -58,23 +75,30 @@ const QuizTab = () => {
     questionId: number,
     selectedAnswer: "A" | "B" | "C" | "D"
   ) => {
-    // TODO: Replace with actual API call to save answer
-    // await fetch('/api/save-answer', {
-    //   method: 'POST',
-    //   body: JSON.stringify({ questionId, answer, skillId: selectedSkill })
-    // });
+    if (!sessionId) {
+      console.error("No active session");
+      return;
+    }
 
-    console.log("Saving answer:", {
-      questionId,
-      selectedAnswer,
-      skillId: selectedSkill,
-    });
+    try {
+      const response = await quizService.submitAnswer(
+        sessionId,
+        questionId,
+        selectedAnswer
+      );
+      
+      console.log("Answer saved:", response);
 
-    // Store answer locally
-    setAnswers((prev) => ({
-      ...prev,
-      [questionId]: selectedAnswer,
-    }));
+      // Store answer locally
+      setAnswers((prev) => ({
+        ...prev,
+        [questionId]: selectedAnswer,
+      }));
+    } catch (err) {
+      console.error("Failed to save answer:", err);
+      setError("Failed to save answer. Please try again.");
+      throw err;
+    }
   };
 
   // Function to handle next question
@@ -85,47 +109,61 @@ const QuizTab = () => {
     }
 
     const currentQuestion = questions[currentQuestionIndex];
+    
     // Convert the selected answer text to its letter label
     let answerLabel: "A" | "B" | "C" | "D";
     if (currentAnswer === currentQuestion.optionA) answerLabel = "A";
     else if (currentAnswer === currentQuestion.optionB) answerLabel = "B";
     else if (currentAnswer === currentQuestion.optionC) answerLabel = "C";
     else answerLabel = "D";
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      await handleAnswerSave(currentQuestion.id, answerLabel);
 
-    await handleAnswerSave(currentQuestion.id, answerLabel);
-
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((prev) => prev + 1);
-      setCurrentAnswer("");
-    } else {
-      // Submit quiz
-      await handleSubmitQuiz();
+      if (currentQuestionIndex < questions.length - 1) {
+        setCurrentQuestionIndex((prev) => prev + 1);
+        setCurrentAnswer("");
+      } else {
+        // Submit quiz
+        await handleSubmitQuiz();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   // Function to handle quiz submission
   const handleSubmitQuiz = async () => {
-    // TODO: Replace with actual API call
-    // await fetch('/api/submit-quiz', {
-    //   method: 'POST',
-    //   body: JSON.stringify({
-    //     skillId: selectedSkill,
-    //     answers
-    //   })
-    // });
+    if (!sessionId) {
+      console.error("No active session");
+      return;
+    }
 
-    console.log("Submitting quiz:", { skillId: selectedSkill, answers });
-    setStep("completed");
+    try {
+      await quizService.completeSession(sessionId);
+      console.log("Quiz completed successfully");
+      setStep("completed");
+    } catch (err) {
+      console.error("Failed to complete quiz:", err);
+      setError("Failed to submit quiz. Please try again.");
+    }
   };
 
   // Reset quiz
   const handleRestart = () => {
     setStep("skill-selection");
     setSelectedSkill(null);
+    setSessionId(null);
     setQuestions([]);
     setCurrentQuestionIndex(0);
     setAnswers({});
     setCurrentAnswer("");
+    setError(null);
   };
 
   // Skill Selection Step
@@ -139,6 +177,12 @@ const QuizTab = () => {
             </Title>
             <Text color="dimmed">Choose a skill to start your quiz</Text>
           </div>
+
+          {error && (
+            <Paper p="md" withBorder style={{ backgroundColor: "#fff5f5", borderColor: "#ff6b6b" }}>
+              <Text color="red">{error}</Text>
+            </Paper>
+          )}
 
           <div
             style={{
@@ -155,7 +199,7 @@ const QuizTab = () => {
                 radius="md"
                 withBorder
                 style={{ cursor: "pointer", transition: "transform 0.2s" }}
-                onClick={() => handleSkillSelect(skill.id)}
+                onClick={() => !loading && handleSkillSelect(skill.id)}
                 onMouseEnter={(e) =>
                   (e.currentTarget.style.transform = "scale(1.02)")
                 }
@@ -166,7 +210,7 @@ const QuizTab = () => {
                 <Stack gap="xs">
                   <Title order={3}>{skill.name}</Title>
                   <Text variant="light">{skill.description}</Text>
-                  <Button variant="light" fullWidth mt="md">
+                  <Button variant="light" fullWidth mt="md" loading={loading}>
                     Start Quiz
                   </Button>
                 </Stack>
@@ -195,6 +239,12 @@ const QuizTab = () => {
             </Group>
             <Progress value={progress} size="sm" radius="xl" />
           </Paper>
+
+          {error && (
+            <Paper p="md" withBorder style={{ backgroundColor: "#fff5f5", borderColor: "#ff6b6b" }}>
+              <Text color="red">{error}</Text>
+            </Paper>
+          )}
 
           <Card shadow="md" padding="xl" radius="md" withBorder>
             <Stack gap="xl">
@@ -306,6 +356,7 @@ const QuizTab = () => {
                   onClick={handleNext}
                   size="md"
                   disabled={!currentAnswer}
+                  loading={loading}
                 >
                   {currentQuestionIndex < questions.length - 1
                     ? "Next Question"

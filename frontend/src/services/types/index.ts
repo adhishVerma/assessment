@@ -90,7 +90,7 @@ export interface ApiResponse<T> {
 }
 
 export interface StartQuizResponse {
-  sessionId: number;
+  id: number;
   skillId: number;
 }
 
