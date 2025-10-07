@@ -21,11 +21,6 @@ export default function App() {
             <Route path="/register" element={<Register />} />
 
             {/* Protected routes */}
-            {/* {/* example ; <Route path="/dashboard" element={
-                <ProtectedRoute role="user">
-                  <UserDashboard />
-                </ProtectedRoute>
-              } /> */}
 
             <Route
               path="/dashboard"

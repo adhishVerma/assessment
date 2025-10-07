@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Card,
@@ -12,127 +12,52 @@ import {
   Badge,
   Paper,
 } from "@mantine/core";
-
-// Placeholder data - replace with API calls
-const PLACEHOLDER_SKILLS = [
-  { id: 1, name: "JavaScript", level: "Intermediate" },
-  { id: 2, name: "React", level: "Advanced" },
-  { id: 3, name: "TypeScript", level: "Beginner" },
-  { id: 4, name: "Node.js", level: "Intermediate" },
-];
-
-const PLACEHOLDER_QUESTIONS = {
-  1: [
-    // JavaScript questions
-    {
-      id: 101,
-      question: "What is the output of typeof null in JavaScript?",
-      options: [
-        { value: "A", label: "null" },
-        { value: "B", label: "object" },
-        { value: "C", label: "undefined" },
-        { value: "D", label: "number" },
-      ],
-    },
-    {
-      id: 102,
-      question: "Which method is used to add elements to the end of an array?",
-      options: [
-        { value: "A", label: "push()" },
-        { value: "B", label: "pop()" },
-        { value: "C", label: "shift()" },
-        { value: "D", label: "unshift()" },
-      ],
-    },
-    {
-      id: 103,
-      question: 'What does the "use strict" directive do?',
-      options: [
-        { value: "A", label: "Makes code run faster" },
-        { value: "B", label: "Enables strict mode parsing" },
-        { value: "C", label: "Compresses the code" },
-        { value: "D", label: "Adds type checking" },
-      ],
-    },
-  ],
-  2: [
-    // React questions
-    {
-      id: 201,
-      question: "What hook is used for side effects in React?",
-      options: [
-        { value: "A", label: "useState" },
-        { value: "B", label: "useEffect" },
-        { value: "C", label: "useContext" },
-        { value: "D", label: "useReducer" },
-      ],
-    },
-    {
-      id: 202,
-      question: "What is JSX?",
-      options: [
-        { value: "A", label: "A JavaScript library" },
-        { value: "B", label: "A syntax extension for JavaScript" },
-        { value: "C", label: "A CSS framework" },
-        { value: "D", label: "A testing tool" },
-      ],
-    },
-  ],
-  3: [
-    // TypeScript questions
-    {
-      id: 301,
-      question: "What is the main benefit of TypeScript?",
-      options: [
-        { value: "A", label: "Faster execution" },
-        { value: "B", label: "Static type checking" },
-        { value: "C", label: "Smaller bundle size" },
-        { value: "D", label: "Better styling" },
-      ],
-    },
-  ],
-  4: [
-    // Node.js questions
-    {
-      id: 401,
-      question: "What is Node.js built on?",
-      options: [
-        { value: "A", label: "Python runtime" },
-        { value: "B", label: "Chrome V8 engine" },
-        { value: "C", label: "Java Virtual Machine" },
-        { value: "D", label: "Ruby runtime" },
-      ],
-    },
-  ],
-};
+import { Question, Skill } from "../../../services/types";
+import { skillService } from "../../../services/skillService";
+import { questionService } from "../../../services/questionService";
 
 const QuizTab = () => {
   const [step, setStep] = useState("skill-selection"); // 'skill-selection' | 'quiz' | 'completed'
-  const [selectedSkill, setSelectedSkill] = useState(null);
-  const [questions, setQuestions] = useState([]);
+  const [selectedSkill, setSelectedSkill] = useState<number | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [currentAnswer, setCurrentAnswer] = useState("");
+  const [skills, setSkills] = useState<Skill[]>([]);
+
+  useEffect(() => {
+    fetchSkills();
+  }, []);
+
+  const fetchSkills = async () => {
+    try {
+      const skillsList = await skillService.getAll();
+      setSkills(skillsList);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   // Function to fetch questions based on skill
-  const handleSkillSelect = async (skillId) => {
+  const handleSkillSelect = async (skillId: number) => {
     setSelectedSkill(skillId);
-
-    // TODO: Replace with actual API call
-    // const response = await fetch(`/api/questions?skillId=${skillId}`);
-    // const data = await response.json();
-
-    // Placeholder: Get questions from mock data
-    const fetchedQuestions = PLACEHOLDER_QUESTIONS[skillId] || [];
-    setQuestions(fetchedQuestions);
-    setStep("quiz");
-    setCurrentQuestionIndex(0);
-    setAnswers({});
-    setCurrentAnswer("");
+    try {
+      const fetchedQuestions = await questionService.getBySkill(skillId);
+      setQuestions(fetchedQuestions);
+      setStep("quiz");
+      setCurrentQuestionIndex(0);
+      setAnswers({});
+      setCurrentAnswer("");
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // Function to save answer
-  const handleAnswerSave = async (questionId, answer) => {
+  const handleAnswerSave = async (
+    questionId: number,
+    selectedAnswer: "A" | "B" | "C" | "D"
+  ) => {
     // TODO: Replace with actual API call to save answer
     // await fetch('/api/save-answer', {
     //   method: 'POST',
@@ -141,14 +66,14 @@ const QuizTab = () => {
 
     console.log("Saving answer:", {
       questionId,
-      answer,
+      selectedAnswer,
       skillId: selectedSkill,
     });
 
     // Store answer locally
     setAnswers((prev) => ({
       ...prev,
-      [questionId]: answer,
+      [questionId]: selectedAnswer,
     }));
   };
 
@@ -160,7 +85,14 @@ const QuizTab = () => {
     }
 
     const currentQuestion = questions[currentQuestionIndex];
-    await handleAnswerSave(currentQuestion.id, currentAnswer);
+    // Convert the selected answer text to its letter label
+    let answerLabel: "A" | "B" | "C" | "D";
+    if (currentAnswer === currentQuestion.optionA) answerLabel = "A";
+    else if (currentAnswer === currentQuestion.optionB) answerLabel = "B";
+    else if (currentAnswer === currentQuestion.optionC) answerLabel = "C";
+    else answerLabel = "D";
+
+    await handleAnswerSave(currentQuestion.id, answerLabel);
 
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
@@ -215,7 +147,7 @@ const QuizTab = () => {
               gap: "1rem",
             }}
           >
-            {PLACEHOLDER_SKILLS.map((skill) => (
+            {skills.map((skill) => (
               <Card
                 key={skill.id}
                 shadow="sm"
@@ -231,11 +163,9 @@ const QuizTab = () => {
                   (e.currentTarget.style.transform = "scale(1)")
                 }
               >
-                <Stack spacing="xs">
+                <Stack gap="xs">
                   <Title order={3}>{skill.name}</Title>
-                  <Badge color="blue" variant="light">
-                    {skill.level}
-                  </Badge>
+                  <Text variant="light">{skill.description}</Text>
                   <Button variant="light" fullWidth mt="md">
                     Start Quiz
                   </Button>
@@ -268,7 +198,7 @@ const QuizTab = () => {
 
           <Card shadow="md" padding="xl" radius="md" withBorder>
             <Stack gap="xl">
-              <Title order={3}>{currentQuestion.question}</Title>
+              <Title order={3}>{currentQuestion.questionText}</Title>
 
               <Radio.Group
                 value={currentAnswer}
@@ -276,31 +206,98 @@ const QuizTab = () => {
                 required
               >
                 <Stack gap="md">
-                  {currentQuestion.options.map((option) => (
-                    <Paper
-                      key={option.value}
-                      p="md"
-                      withBorder
-                      style={{
-                        cursor: "pointer",
-                        backgroundColor:
-                          currentAnswer === option.value
-                            ? "#f0f7ff"
-                            : "transparent",
-                        borderColor:
-                          currentAnswer === option.value
-                            ? "#228be6"
-                            : undefined,
-                      }}
-                      onClick={() => setCurrentAnswer(option.value)}
-                    >
-                      <Radio
-                        value={option.value}
-                        label={`${option.value}. ${option.label}`}
-                        styles={{ label: { cursor: "pointer" } }}
-                      />
-                    </Paper>
-                  ))}
+                  {/* Option A */}
+                  <Paper
+                    p="md"
+                    withBorder
+                    style={{
+                      cursor: "pointer",
+                      backgroundColor:
+                        currentAnswer === currentQuestion.optionA
+                          ? "#f0f7ff"
+                          : "transparent",
+                      borderColor:
+                        currentAnswer === currentQuestion.optionA
+                          ? "#228be6"
+                          : undefined,
+                    }}
+                    onClick={() => setCurrentAnswer(currentQuestion.optionA)}
+                  >
+                    <Radio
+                      value={currentQuestion.optionA}
+                      label={`A. ${currentQuestion.optionA}`}
+                      styles={{ label: { cursor: "pointer" } }}
+                    />
+                  </Paper>
+                  {/* Option B */}
+                  <Paper
+                    p="md"
+                    withBorder
+                    style={{
+                      cursor: "pointer",
+                      backgroundColor:
+                        currentAnswer === currentQuestion.optionB
+                          ? "#f0f7ff"
+                          : "transparent",
+                      borderColor:
+                        currentAnswer === currentQuestion.optionB
+                          ? "#228be6"
+                          : undefined,
+                    }}
+                    onClick={() => setCurrentAnswer(currentQuestion.optionB)}
+                  >
+                    <Radio
+                      value={currentQuestion.optionB}
+                      label={`B. ${currentQuestion.optionB}`}
+                      styles={{ label: { cursor: "pointer" } }}
+                    />
+                  </Paper>
+                  {/* Option C */}
+                  <Paper
+                    p="md"
+                    withBorder
+                    style={{
+                      cursor: "pointer",
+                      backgroundColor:
+                        currentAnswer === currentQuestion.optionC
+                          ? "#f0f7ff"
+                          : "transparent",
+                      borderColor:
+                        currentAnswer === currentQuestion.optionC
+                          ? "#228be6"
+                          : undefined,
+                    }}
+                    onClick={() => setCurrentAnswer(currentQuestion.optionC)}
+                  >
+                    <Radio
+                      value={currentQuestion.optionC}
+                      label={`C. ${currentQuestion.optionC}`}
+                      styles={{ label: { cursor: "pointer" } }}
+                    />
+                  </Paper>
+                  {/* Option D */}
+                  <Paper
+                    p="md"
+                    withBorder
+                    style={{
+                      cursor: "pointer",
+                      backgroundColor:
+                        currentAnswer === currentQuestion.optionD
+                          ? "#f0f7ff"
+                          : "transparent",
+                      borderColor:
+                        currentAnswer === currentQuestion.optionD
+                          ? "#228be6"
+                          : undefined,
+                    }}
+                    onClick={() => setCurrentAnswer(currentQuestion.optionD)}
+                  >
+                    <Radio
+                      value={currentQuestion.optionD}
+                      label={`D. ${currentQuestion.optionD}`}
+                      styles={{ label: { cursor: "pointer" } }}
+                    />
+                  </Paper>
                 </Stack>
               </Radio.Group>
 
