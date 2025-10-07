@@ -1,14 +1,15 @@
 import { AppShell, Burger, Group, Stack, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import SidebarButton from "../../components/sidebar/SidebarButton";
-import { IconBook, IconUsers } from "@tabler/icons-react";
+import { IconBook, IconBrandReact, IconUsers } from "@tabler/icons-react";
 import { useState } from "react";
 import QuestionsTab from "../../components/dashboard/questions-tab/QuestionsTab";
 import UsersTab from "../../components/dashboard/users-tab/UsersTab";
+import SkillsTab from "../../components/dashboard/skills-tab/SkillsTab";
 
 const AdminDashboard = () => {
   const [opened, { toggle }] = useDisclosure();
-  const [activeTab, setActiveTab] = useState<"questions" | "users">(
+  const [activeTab, setActiveTab] = useState<"questions" | "users" | "skills">(
     "questions"
   );
 
@@ -18,6 +19,8 @@ const AdminDashboard = () => {
         return <QuestionsTab />;
       case "users":
         return <UsersTab />;
+      case "skills":
+        return <SkillsTab />;
       default:
         return <QuestionsTab />;
     }
@@ -49,6 +52,12 @@ const AdminDashboard = () => {
             onClick={() => setActiveTab("users")}
           >
             Users
+          </SidebarButton>
+          <SidebarButton
+            icon={<IconBrandReact />}
+            onClick={() => setActiveTab("skills")}
+          >
+            Skills
           </SidebarButton>
         </Stack>
       </AppShell.Navbar>

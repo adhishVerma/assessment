@@ -17,11 +17,9 @@ import { IconTrophy, IconTarget, IconTrendingUp } from "@tabler/icons-react";
 // import { quizService } from "../../../services/quizService";
 import { userService } from "../../../services/userService";
 import { QuizReport } from "../../../services/types";
-import { report } from "process";
-
 
 interface Props {
-  userId?: string;
+  userId?: number;
 }
 
 const ReportsTab = ({ userId }: Props) => {
@@ -30,27 +28,26 @@ const ReportsTab = ({ userId }: Props) => {
   useEffect(() => {
     const fetchReports = async () => {
       if (userId) {
-        const data = await userService.getUserReport(parseInt(userId));
+        const data = await userService.getUserReport(userId);
         setReports(data);
       }
     };
     fetchReports();
-  }, []);
+  }, [userId]);
 
-  const getScoreColor = (score : number) => {
+  const getScoreColor = (score: number) => {
     if (score >= 90) return "green";
     if (score >= 75) return "blue";
     if (score >= 60) return "yellow";
     return "red";
   };
 
-  const getScoreBadgeLabel = (score : number) => {
+  const getScoreBadgeLabel = (score: number) => {
     if (score >= 90) return "Excellent";
     if (score >= 75) return "Good";
     if (score >= 60) return "Fair";
     return "Needs Improvement";
   };
-
 
   return (
     <Container size="lg" py="xl">
@@ -59,23 +56,18 @@ const ReportsTab = ({ userId }: Props) => {
           <Title order={2} mb="xs">
             Quiz Reports
           </Title>
-          <Text color="dimmed">View your past quiz performance and scores</Text>
+          <Text c="dimmed">View your past quiz performance and scores</Text>
         </div>
 
         {/* Summary Stats */}
-        <SimpleGrid cols={3} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
+        <SimpleGrid cols={{ base: 1, sm: 3 }}>
           <Paper p="md" withBorder>
-            <Group position="apart">
+            <Group justify="space-between">
               <div>
-                <Text
-                  size="xs"
-                  color="dimmed"
-                  w={500}
-                  transform="uppercase"
-                >
+                <Text size="xs" c="dimmed" fw={500} tt="uppercase">
                   Total Quizzes
                 </Text>
-                <Text size="xl" w={700} mt="xs">
+                <Text size="xl" fw={700} mt="xs">
                   {reports?.totalQuizzes}
                 </Text>
               </div>
@@ -86,17 +78,12 @@ const ReportsTab = ({ userId }: Props) => {
           </Paper>
 
           <Paper p="md" withBorder>
-            <Group position="apart">
+            <Group justify="space-between">
               <div>
-                <Text
-                  size="xs"
-                  color="dimmed"
-                  weight={500}
-                  transform="uppercase"
-                >
+                <Text size="xs" c="dimmed" fw={500} tt="uppercase">
                   Average Score
                 </Text>
-                <Text size="xl" weight={700} mt="xs">
+                <Text size="xl" fw={700} mt="xs">
                   {reports?.averageScore}%
                 </Text>
               </div>
@@ -107,17 +94,12 @@ const ReportsTab = ({ userId }: Props) => {
           </Paper>
 
           <Paper p="md" withBorder>
-            <Group position="apart">
+            <Group justify="space-between">
               <div>
-                <Text
-                  size="xs"
-                  color="dimmed"
-                  weight={500}
-                  transform="uppercase"
-                >
+                <Text size="xs" c="dimmed" fw={500} tt="uppercase">
                   Excellent Scores
                 </Text>
-                <Text size="xl" weight={700} mt="xs">
+                <Text size="xl" fw={700} mt="xs">
                   {reports?.excellentScore}
                 </Text>
               </div>
@@ -129,14 +111,14 @@ const ReportsTab = ({ userId }: Props) => {
         </SimpleGrid>
 
         {/* Quiz Results List */}
-        <Stack spacing="md">
-          {reports?.totalQuizzes.length === 0 ? (
+        <Stack gap="md">
+          {reports?.totalQuizzes === 0 ? (
             <Card shadow="sm" padding="xl" radius="md" withBorder>
-              <Stack align="center" spacing="xs">
-                <Text size="lg" color="dimmed">
+              <Stack align="center" gap="xs">
+                <Text size="lg" c="dimmed">
                   No quiz results yet
                 </Text>
-                <Text size="sm" color="dimmed">
+                <Text size="sm" c="dimmed">
                   Take a quiz to see your results here
                 </Text>
               </Stack>
@@ -144,19 +126,19 @@ const ReportsTab = ({ userId }: Props) => {
           ) : (
             reports?.topicWise.map((report) => (
               <Card
-                key={report.id}
+                key={report.quizId}
                 shadow="sm"
                 padding="lg"
                 radius="md"
                 withBorder
               >
-                <Group position="apart" align="flex-start">
+                <Group justify="space-between" align="flex-start">
                   <div style={{ flex: 1 }}>
-                    <Group spacing="sm" mb="xs">
+                    <Group gap="sm" mb="xs">
                       <Title order={4}>{report.skillName}</Title>
-                      <Badge variant="light" size="sm">
-                        {report.level || 'Medium'}
-                      </Badge>
+                      {/* <Badge variant="light" size="sm">
+                        {report. || "Medium"}
+                      </Badge> */}
                       <Badge
                         color={getScoreColor(report.scorePercent)}
                         variant="filled"
@@ -165,7 +147,7 @@ const ReportsTab = ({ userId }: Props) => {
                       </Badge>
                     </Group>
 
-                    <Text size="sm" color="dimmed" mb="md">
+                    <Text size="sm" c="dimmed" mb="md">
                       Started on{" "}
                       {new Date(report.createdAt).toLocaleDateString("en-US", {
                         year: "numeric",
@@ -174,17 +156,17 @@ const ReportsTab = ({ userId }: Props) => {
                       })}
                     </Text>
 
-                    <Group spacing="xl">
+                    <Group gap="xl">
                       <div>
-                        <Text size="xs" color="dimmed" weight={500}>
+                        <Text size="xs" c="dimmed" fw={500}>
                           Correct Answers
                         </Text>
-                        <Text size="sm" weight={600}>
+                        <Text size="sm" fw={600}>
                           {report.correct} / {report.total}
                         </Text>
                       </div>
                       <div style={{ flex: 1 }}>
-                        <Text size="xs" color="dimmed" weight={500} mb={4}>
+                        <Text size="xs" c="dimmed" fw={500} mb={4}>
                           Score
                         </Text>
                         <Progress
@@ -209,7 +191,7 @@ const ReportsTab = ({ userId }: Props) => {
                     ]}
                     label={
                       <div style={{ textAlign: "center" }}>
-                        <Text size="xl" weight={700}>
+                        <Text size="xl" fw={700}>
                           {report.scorePercent}%
                         </Text>
                       </div>
