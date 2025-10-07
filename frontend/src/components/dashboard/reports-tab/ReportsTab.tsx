@@ -19,6 +19,11 @@ import {
   Table,
   Alert,
   Button,
+  TableThead,
+  TableTh,
+  TableTr,
+  TableTbody,
+  TableTd,
 } from "@mantine/core";
 import {
   IconTrophy,
@@ -394,23 +399,23 @@ const ReportsTab = ({ userId }: Props) => {
                       Skill Performance Analysis
                     </Title>
                     <Table striped highlightOnHover>
-                      <thead>
-                        <tr>
-                          <th>Skill</th>
-                          <th>Avg Score</th>
-                          <th>Quizzes</th>
-                          <th>Status</th>
-                          <th>Trend</th>
-                          <th>Last Attempted</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                      <TableThead>
+                        <TableTr>
+                          <TableTh>Skill</TableTh>
+                          <TableTh>Avg Score</TableTh>
+                          <TableTh>Quizzes</TableTh>
+                          <TableTh>Status</TableTh>
+                          <TableTh>Trend</TableTh>
+                          <TableTh>Last Attempted</TableTh>
+                        </TableTr>
+                      </TableThead>
+                      <TableTbody>
                         {reports.skillGaps.map((gap) => (
-                          <tr key={gap.skillId}>
-                            <td>
+                          <TableTr key={gap.skillId}>
+                            <TableTd>
                               <Text fw={500}>{gap.skillName}</Text>
-                            </td>
-                            <td>
+                            </TableTd>
+                            <TableTd>
                               <Group gap="xs">
                                 <Progress
                                   value={gap.averageScore}
@@ -422,9 +427,9 @@ const ReportsTab = ({ userId }: Props) => {
                                   {gap.averageScore}%
                                 </Text>
                               </Group>
-                            </td>
-                            <td>{gap.quizzesTaken}</td>
-                            <td>
+                            </TableTd>
+                            <TableTd>{gap.quizzesTaken}</TableTd>
+                            <TableTd>
                               <Badge
                                 color={getStatusColor(gap.status)}
                                 variant="light"
@@ -437,8 +442,8 @@ const ReportsTab = ({ userId }: Props) => {
                                   )
                                   .join(" ")}
                               </Badge>
-                            </td>
-                            <td>
+                            </TableTd>
+                            <TableTd>
                               <Badge
                                 color={getTrendColor(gap.trend)}
                                 variant="light"
@@ -447,8 +452,8 @@ const ReportsTab = ({ userId }: Props) => {
                                 {gap.trend.charAt(0).toUpperCase() +
                                   gap.trend.slice(1)}
                               </Badge>
-                            </td>
-                            <td>
+                            </TableTd>
+                            <TableTd>
                               <Text size="sm" c="dimmed">
                                 {new Date(gap.lastAttempted).toLocaleDateString(
                                   "en-US",
@@ -458,10 +463,10 @@ const ReportsTab = ({ userId }: Props) => {
                                   }
                                 )}
                               </Text>
-                            </td>
-                          </tr>
+                            </TableTd>
+                          </TableTr>
                         ))}
-                      </tbody>
+                      </TableTbody>
                     </Table>
                   </Card>
 
