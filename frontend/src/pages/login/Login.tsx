@@ -14,10 +14,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { IconX } from "@tabler/icons-react";
 import { authService } from "../../services/authService";
+import { useAuth } from "../../contexts/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const { setUser } = useAuth();
 
   const form = useForm({
     mode: "uncontrolled",
@@ -36,13 +38,11 @@ const Login = () => {
     setError(null);
 
     try {
-      await authService.login({
+      const { user } = await authService.login({
         email: values.email,
         password: values.password,
       });
-
-      // Navigate to dashboard on successful login
-      navigate("/dashboard");
+      setUser(user);
     } catch (err: any) {
       // Handle axios error response
       const errorMessage =
