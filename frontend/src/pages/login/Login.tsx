@@ -17,7 +17,6 @@ import { authService } from "../../services/authService";
 import { useAuth } from "../../contexts/AuthContext";
 
 const Login = () => {
-  const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const { setUser } = useAuth();
 

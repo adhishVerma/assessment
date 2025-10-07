@@ -1,7 +1,7 @@
 import "@mantine/core/styles.css";
 import { MantineProvider } from "@mantine/core";
 import { theme } from "./theme";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Login from "./pages/login/Login";
 import Register from "./pages/register/Register";
 import Dashboard from "./pages/dashboard/Dashboard";
@@ -18,7 +18,14 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             {/* Public routes */}
-
+            <Route
+              path="/"
+              element={
+                <PublicRoute>
+                  <Navigate to="/dashboard" />
+                </PublicRoute>
+              }
+            />
             <Route
               path="/login"
               element={
